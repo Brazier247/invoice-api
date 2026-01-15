@@ -29,7 +29,7 @@ app.get("/test-env", (req, res) => {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? "OK" : "MISSING",
     VERYFI_CLIENT_ID: process.env.VERYFI_CLIENT_ID ? "OK" : "MISSING",
     VERYFI_USERNAME: process.env.VERYFI_USERNAME ? "OK" : "MISSING",
-    VERYFI_API_KEY: process.env.VERYFI_API_KEY ? "OK" : "MISSING"
+    VERYFI_API_KEY: process.env.VERYFI_API_KEY ? "OK" : "MISSING",
     VERYFI_CLIENT_SECRET: process.env.VERYFI_CLIENT_SECRET ? "OK" : "MISSING"
   });
 });
