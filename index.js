@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import Veryfi from "@veryfi/veryfi-sdk";
@@ -17,7 +18,8 @@ const supabase = createClient(
 const veryfiClient = new Veryfi(
   process.env.VERYFI_CLIENT_ID,
   process.env.VERYFI_USERNAME,
-  process.env.VERYFI_API_KEY
+  process.env.VERYFI_API_KEY,
+  process.env.VERYFI_CLIENT_SECRET
 );
 
 // Test endpoint
@@ -28,6 +30,7 @@ app.get("/test-env", (req, res) => {
     VERYFI_CLIENT_ID: process.env.VERYFI_CLIENT_ID ? "OK" : "MISSING",
     VERYFI_USERNAME: process.env.VERYFI_USERNAME ? "OK" : "MISSING",
     VERYFI_API_KEY: process.env.VERYFI_API_KEY ? "OK" : "MISSING"
+    VERYFI_CLIENT_SECRET: process.env.VERYFI_CLIENT_SECRET ? "OK" : "MISSING"
   });
 });
 
