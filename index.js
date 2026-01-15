@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "50mb" })); // Increased limit for PDFs
 
 // Supabase client
 const supabase = createClient(
@@ -40,11 +40,11 @@ app.post("/extract-invoice", async (req, res) => {
       return res.status(400).json({ error: "Missing base64 invoice" });
     }
 
-    // Convert base64 to Buffer for Veryfi SDK
-    const buffer = Buffer.from(base64, "base64");
-
-    // Extract with Veryfi
-    const result = await veryfiClient.process_document(buffer);
+    // Extract with Veryfi using base64
+    const result = await veryfiClient.process_document({
+      file_data: base64,
+      file_name: "invoice.jpg"
+    });
 
     // Map fields for Supabase
     const invoiceData = {
