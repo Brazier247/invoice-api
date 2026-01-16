@@ -7,6 +7,10 @@ import multer from "multer";
 import Veryfi from "@veryfi/veryfi-sdk";
 import { createClient } from "@supabase/supabase-js";
 
+console.log("Checking Supabase Config:", {
+  url: process.env.SUPABASE_URL ? "FOUND" : "MISSING",
+  key: process.env.SUPABASE_SERVICE_ROLE_KEY ? "FOUND" : "MISSING"
+});
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" })); // Increased limit for PDFs
