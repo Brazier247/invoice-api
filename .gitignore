@@ -1,0 +1,14 @@
+# Sensitive data
+.env
+
+# Dependencies
+node_modules/
+
+# Temporary storage
+uploads/*.pdf
+uploads/*.jpg
+uploads/*.jpeg
+uploads/*.png
+
+# System files
+.DS_Store
