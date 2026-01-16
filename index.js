@@ -1,6 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
+import multer from "multer";
 import Veryfi from "@veryfi/veryfi-sdk";
 import { createClient } from "@supabase/supabase-js";
 
@@ -36,20 +39,34 @@ app.get("/test-env", (req, res) => {
 
 // Invoice extraction endpoint
 app.post("/extract-invoice", async (req, res) => {
+  let tempPath = null; // We create this variable here so we can delete the file even if an error occurs
+
   try {
     const { base64 } = req.body;
 
     if (!base64) {
-      return res.status(400).json({ error: "Missing base64 invoice" });
+      return res.status(400).json({ error: "Missing base64 invoice data" });
     }
 
-    // Extract with Veryfi using base64
-    const result = await veryfiClient.process_document({
-      file_data: base64,
-      file_name: "invoice.jpg"
-    });
+    // 1. Create a Buffer from the base64 string
+    const buffer = Buffer.from(base64, "base64");
+    
+    // 2. Define the path inside your new 'uploads' folder
+    // We use Date.now() to make sure every file has a unique name
+    const fileName = `invoice-${Date.now()}.pdf`;
+    tempPath = path.join("uploads", fileName);
 
-    // Map fields for Supabase
+    // 3. Write the file to your 'uploads' folder
+    fs.writeFileSync(tempPath, buffer);
+
+    // 4. Send the REAL FILE PATH to Veryfi
+    // This fixes the 'Object instead of String' error
+    const result = await veryfiClient.process_document(tempPath);
+
+    // 5. Cleanup: Delete the file from the uploads folder immediately
+    fs.unlinkSync(tempPath); 
+
+    // 6. Map fields for Supabase
     const invoiceData = {
       supplier_name: result.vendor?.name || null,
       invoice_number: result.invoice_number || null,
@@ -60,6 +77,7 @@ app.post("/extract-invoice", async (req, res) => {
       raw_json: result
     };
 
+    // 7. Save to your Supabase Database
     const { data, error } = await supabase
       .from("invoices")
       .insert(invoiceData)
@@ -71,18 +89,18 @@ app.post("/extract-invoice", async (req, res) => {
     }
 
     res.json({
-      message: "Invoice processed",
+      message: "Invoice processed and saved successfully",
       invoice: data[0]
     });
 
   } catch (err) {
     console.error("Extraction error:", err);
-    res.status(500).json({ error: "Extraction failed" });
+    
+    // Safety check: If Veryfi failed, we still want to delete the temp file
+    if (tempPath && fs.existsSync(tempPath)) {
+      fs.unlinkSync(tempPath);
+    }
+    
+    res.status(500).json({ error: "Extraction failed", details: err.message });
   }
-});
-
-// Start server
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
 });
